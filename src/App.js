@@ -1,25 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import MonthSelector from './MonthSelector';
+import Statistics from './Statistics';
+import BarChart from './BarChart';
+import PieChart from './PieChart';
+import TransactionTable from './TransactionTable';
 
-function App() {
+const App = () => {
+  const [month, setMonth] = useState(1); // Default to January
+  const [data, setData] = useState(null);
+
+  const fetchData = async (selectedMonth) => {
+    try {
+      const response = await axios.get(`/combined?month=${selectedMonth}`);
+      setData(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(month);
+  }, [month]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Transaction Dashboard</h1>
+      <MonthSelector onChange={(selectedMonth) => setMonth(selectedMonth)} />
+      {data ? (
+        <div>
+          <Statistics statistics={data.statistics} />
+          <BarChart barChartData={data.barChart} />
+          <PieChart pieChartData={data.pieChart} />
+          <TransactionTable month={month} />
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
-}
+};
 
 export default App;
+
